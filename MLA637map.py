@@ -57,21 +57,19 @@ def download_mergin_project():
 def load_geodata():
     try:
         gdf = gpd.read_file('./MLA637/ecosystem_service.gpkg')
+        
+        # Reproject if necessary
         if gdf.crs != 'EPSG:4326':
             gdf = gdf.to_crs(epsg=4326)
 
-# Manual refresh
-if st.button("🔄 Refresh Data"):
-    st.cache_data.clear()
-    st.experimental_rerun()        
-
-        # Fill NaN values in the relevant columns with an empty string before filtering
+        # Fill NaNs for filtering
         gdf['provisioning_type'] = gdf['provisioning_type'].fillna('')
         gdf['regulating_type'] = gdf['regulating_type'].fillna('')
         gdf['cultural_type'] = gdf['cultural_type'].fillna('')
         gdf['supporting_type'] = gdf['supporting_type'].fillna('')
 
         return gdf
+
     except Exception as e:
         st.error(f"Error loading geodata: {e}")
         return None
