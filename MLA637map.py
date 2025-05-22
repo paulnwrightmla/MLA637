@@ -25,6 +25,7 @@ Use the sidebar to filter by user username and explore the data.
 # Sidebar controls
 st.sidebar.header("Data Filters")
 
+@st.cache_data(ttl=60)
 
 # Function to download the Mergin Maps project
 @st.cache_data
