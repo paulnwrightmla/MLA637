@@ -25,13 +25,8 @@ Use the sidebar to filter by user username and explore the data.
 # Sidebar controls
 st.sidebar.header("Data Filters")
 
-@st.cache_data(ttl=60)
-
 # Function to download the Mergin Maps project
-@st.cache_data
-if st.button("Refresh Data"):
-    st.cache_data.clear()
-    st.experimental_rerun()
+@st.cache_data (ttl=20)
 def download_mergin_project():
     # Define the directory path
     project_directory = './MLA637'
