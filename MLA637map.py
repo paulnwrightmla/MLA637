@@ -60,6 +60,11 @@ def load_geodata():
         if gdf.crs != 'EPSG:4326':
             gdf = gdf.to_crs(epsg=4326)
 
+# Manual refresh
+if st.button("🔄 Refresh Data"):
+    st.cache_data.clear()
+    st.experimental_rerun()        
+
         # Fill NaN values in the relevant columns with an empty string before filtering
         gdf['provisioning_type'] = gdf['provisioning_type'].fillna('')
         gdf['regulating_type'] = gdf['regulating_type'].fillna('')
