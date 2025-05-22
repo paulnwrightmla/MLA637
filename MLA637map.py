@@ -29,6 +29,9 @@ st.sidebar.header("Data Filters")
 
 # Function to download the Mergin Maps project
 @st.cache_data
+if st.button("Refresh Data"):
+    st.cache_data.clear()
+    st.experimental_rerun()
 def download_mergin_project():
     # Define the directory path
     project_directory = './MLA637'
