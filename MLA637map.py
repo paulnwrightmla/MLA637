@@ -7,6 +7,7 @@ import folium
 from folium.plugins import MarkerCluster
 import os
 import shutil
+from datetime import datetime
 
 # Set page config
 st.set_page_config(
@@ -23,10 +24,24 @@ Use the sidebar to filter by user username and explore the data.
 """)
 
 # Sidebar controls
+st.sidebar.header("Data Controls")
+
+# Add refresh button
+if st.sidebar.button("🔄 Refresh Data", help="Download latest data from Mergin Maps"):
+    # Clear all caches
+    st.cache_data.clear()
+    # Reset session state
+    if 'data_downloaded' in st.session_state:
+        del st.session_state.data_downloaded
+    if 'last_refresh' in st.session_state:
+        del st.session_state.last_refresh
+    st.rerun()
+
 st.sidebar.header("Data Filters")
 
+
 # Function to download the Mergin Maps project
-@st.cache_data (ttl=20)
+@st.cache_data(ttl=60)  # Cache for 1 minutes (60 seconds)
 def download_mergin_project():
     # Define the directory path
     project_directory = './MLA637'
@@ -53,23 +68,20 @@ def download_mergin_project():
 
 
 # Function to load and process the GeoPackage data
-@st.cache_data
+@st.cache_data(ttl=60)  # Cache for 1 minute
 def load_geodata():
     try:
         gdf = gpd.read_file('./MLA637/ecosystem_service.gpkg')
-        
-        # Reproject if necessary
         if gdf.crs != 'EPSG:4326':
             gdf = gdf.to_crs(epsg=4326)
 
-        # Fill NaNs for filtering
+        # Fill NaN values in the relevant columns with an empty string before filtering
         gdf['provisioning_type'] = gdf['provisioning_type'].fillna('')
         gdf['regulating_type'] = gdf['regulating_type'].fillna('')
         gdf['cultural_type'] = gdf['cultural_type'].fillna('')
         gdf['supporting_type'] = gdf['supporting_type'].fillna('')
 
         return gdf
-
     except Exception as e:
         st.error(f"Error loading geodata: {e}")
         return None
@@ -250,10 +262,19 @@ if 'data_downloaded' not in st.session_state:
 # Display a button to trigger the download
 if not st.session_state.data_downloaded:
     if st.sidebar.button("Download MLA637 Data"):
-        st.session_state.data_downloaded = download_mergin_project()
+        success = download_mergin_project()
+        if success:
+            st.session_state.data_downloaded = True
+            st.session_state.last_refresh = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            st.success("Data downloaded successfully!")
+            st.rerun()
 
 # If the data is downloaded, load it and display the map
 if st.session_state.data_downloaded:
+    # Display last refresh time
+    if 'last_refresh' in st.session_state:
+        st.sidebar.text(f"Last updated: {st.session_state.last_refresh}")
+
     gdf = load_geodata()
 
     if gdf is not None:
